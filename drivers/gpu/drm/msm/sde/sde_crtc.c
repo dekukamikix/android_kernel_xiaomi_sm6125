@@ -3148,8 +3148,7 @@ static void _sde_crtc_set_dim_layer_v1(struct drm_crtc *crtc,
 		user_cfg = &dim_layer_v1.layer_cfg[i];
 
 		dim_layer[i].flags = user_cfg->flags;
-		dim_layer[i].stage = (kms->catalog->has_base_layer) ?
-			user_cfg->stage : user_cfg->stage + SDE_STAGE_0;
+		dim_layer[i].stage = user_cfg->stage + SDE_STAGE_0;
 
 		dim_layer[i].rect.x = user_cfg->rect.x1;
 		dim_layer[i].rect.y = user_cfg->rect.y1;
@@ -5366,13 +5365,6 @@ static int sde_crtc_atomic_check(struct drm_crtc *crtc,
 				pstates[cnt].sde_pstate, PLANE_PROP_ZPOS);
 		pstates[cnt].pipe_id = sde_plane_pipe(plane);
 
-		/*
-		 * check for stages of dimlayer and planestate based on
-		 * has_base_layer property
-		 */
-		if (!kms->catalog->has_base_layer)
-			inc_sde_stage = SDE_STAGE_0;
-
 		/* check dim layer stage with every plane */
 		for (i = 0; i < cstate->num_dim_layers; i++) {
 			if (cstate->dim_layer[i].stage
@@ -5894,9 +5886,6 @@ static void sde_crtc_install_properties(struct drm_crtc *crtc,
 	if (catalog->ubwc_bw_calc_version)
 		sde_kms_info_add_keyint(info, "ubwc_bw_calc_ver",
 				catalog->ubwc_bw_calc_version);
-
-	sde_kms_info_add_keyint(info, "use_baselayer_for_stage",
-				catalog->has_base_layer);
 
 	msm_property_set_blob(&sde_crtc->property_info, &sde_crtc->blob_info,
 			info->data, SDE_KMS_INFO_DATALEN(info), CRTC_PROP_INFO);
